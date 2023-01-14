@@ -34,6 +34,15 @@
                 </div>
                 <div class="file-upload-content">
                     <img class="file-upload-image" id="face-image" src="#" alt="your image" />
+
+                    <!-- ai 분석 로딩 -->
+                    <div id="loading" class="animated bounce">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p class="text-center">AI가 당신의 동물상을 분석중입니다.</p>
+                    </div>
+                    <!-- ai 분석 로딩 -->
                     <p class="result-message"></p>
                     <div id="label-container"></div>
 
@@ -148,6 +157,7 @@
 
                     reader.onload = function (e) {
                         $('.image-upload-wrap').hide();
+                        $('#loading').show();
                         $('.file-upload-image').attr('src', e.target.result);
                         $('.file-upload-content').show();
                         $('.image-title').html(input.files[0].name);
@@ -156,6 +166,7 @@
                     reader.readAsDataURL(input.files[0]);
                     init().then(() => {
                         predict();
+                        $('#loading').hide();
                     });
                 } else {
                     removeUpload();
