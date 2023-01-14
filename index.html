@@ -12,9 +12,11 @@
             src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-63c10c1e1b1336b5"
         ></script>
         <!-- 공유 버튼 -->
+        <script  type="text/javascript" src="animal_list_js.js" charset="UTF-8"></script>
     </head>
     <body>
         <div class="div_area">
+
             <!-- 업로드 html -->
             <script
                 class="jsbin"
@@ -40,19 +42,29 @@
                         <div class="spinner-border" role="status">
                             <span class="sr-only">Loading...</span>
                         </div>
-                        <p class="text-center">AI가 당신의 동물상을 분석중입니다.</p>
+                        <p class="text-center">잠시만 기다려 주세요!<br>AI가 당신의 동물상을 분석중입니다.</p>
                     </div>
                     <!-- ai 분석 로딩 -->
-                    <p class="result-message"></p>
+                    
+                    <!-- 메세지 출력 -->
+                    <p class="mes_title"></p>
+                    <p class="mes_cont"></p>
+                    <p class="mes_cele"></p>
+                    <!-- 메세지 출력 -->
+                    
+                    
+                    <!-- 분석 결과 -->
                     <div id="label-container"></div>
+                    <!-- 분석 결과 -->
 
+                    
                     <!-- 공유 버튼 -->
                     <div class="addthis_inline_share_toolbox"></div>
                     <!-- 공유 버튼 -->
 
                     <div class="image-title-wrap">
                         <button type="button" onclick="removeUpload()" class="remove-image">
-                            Remove <span class="image-title">Uploaded Image</span>
+                            <span class="image-title" onclick="gatReload();">다시하기</span>
                         </button>
                     </div>
                 </div>
@@ -62,9 +74,22 @@
             <!-- 업로드 html -->
 
             <!-- 댓글 -->
+            <div class="disqus_comments">
             <div id="disqus_thread"></div>
+            </div>
             <!-- 댓글 -->
         </div>
+        <!-- 페이지 기능 -->
+        <script>
+        function gatReload() {
+            window.location.reload();
+        }
+            
+            
+        </script>
+        <!-- 페이지 기능 -->
+        
+        
         <!-- 인공지능 머신 -->
 
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
@@ -107,44 +132,76 @@
                 const prediction = await model.predict(images, false);
                 // 순서 정렬
                 prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
-                var resultMessege;
-                switch (prediction[0].className) {
-                    case 'dog':
-                        resultMessege = '강아지상';
-                        break;
-                    case 'cat':
-                        resultMessege = '고양이상';
-                        break;
-                    case 'bear':
-                        resultMessege = '곰상';
-                        break;
-                    case 'dinosaur':
-                        resultMessege = '공룡상';
-                        break;
-                    case 'rabbit':
-                        resultMessege = '토끼상';
-                        break;
-                    case 'deer':
-                        resultMessege = '사슴상';
-                        break;
-                    case 'fox':
-                        resultMessege = '여우상';
-                        break;
-                    case 'turtle':
-                        resultMessege = '꼬북이상';
-                        break;
-                    case 'snake':
-                        resultMessege = '뱀상';
-                        break;
-                    default:
-                }
-                $('.result-message').html(resultMessege);
+                var mes_title, mes_cont, mes_cele, animal_graph = [], animal_graph_name = [];
+                var labelTitle;
+                
+             
+                
 
                 for (let i = 0; i < maxPredictions; i++) {
-                    const classPrediction =
-                        prediction[i].className + ': ' + prediction[i].probability.toFixed(2);
-                    labelContainer.childNodes[i].innerHTML = classPrediction;
+
+                    if (prediction[0].className == animal_list[i][0]) {
+                        mes_title = animal_list[i][2] + " " + animal_list[i][1];
+                        mes_cont = animal_list[i][4];
+                        mes_cele = animal_list[i][3];
+                        $('.mes_title').css("color","#"+animal_list[i][5]);
+                        $('.mes_cele').css("color","#"+animal_list[i][5]);
+                        
+                    }
+                    
+                     switch (prediction[i].className) {
+                    case "dog":
+                        labelTitle = "강아지상"
+                        break;
+                    case "cat":
+                        labelTitle = "고양이상"
+                        break;
+                    case "fox":
+                        labelTitle = "여우상"
+                        break;
+                    case "bear":
+                        labelTitle = "곰상"
+                        break;
+                    case "deer":
+                        labelTitle = "사슴상"
+                        break;
+                    case "snake":
+                        labelTitle = "뱀상"
+                        break;
+                    case "turtle":
+                        labelTitle = "꼬부기상"
+                        break;
+                    case "rabbit":
+                        labelTitle = "토끼상"
+                        break;
+                    case "dinosaur":
+                        labelTitle = "공룡상"
+                        break;
+                    default:
+                        labelTitle = "알수없음"
                 }
+                    
+                    const classPrediction = "<div class='animal_graph'><span class='animal_graph_span animal_graph"+prediction[i].className+"'>"+ labelTitle + ': ' + Math.round(prediction[i].probability.toFixed(2) * 100) + "%</span></div>";
+                    animal_graph.push(Math.round(prediction[i].probability.toFixed(2) * 100));
+                    animal_graph_name.push(prediction[i].className);
+                    //$('#animal_graph'+i).css("width", (prediction[i].probability.toFixed(2) * 100)+"%");
+                    
+                    
+                    // console.log((prediction[i].probability.toFixed(2) * 100)+"%");
+                    <!-- 결과 값이 0이 아닐 경우에만 표시 -->
+                    if (prediction[i].probability.toFixed(2) > 0) {
+                        labelContainer.childNodes[i].innerHTML = classPrediction;
+                    }
+                    
+                }
+                $('.mes_title').html(mes_title);
+                $('.mes_cont').html(mes_cont);
+                $('.mes_cele').html(mes_cele);
+                for (let i = 0; i < animal_list.length; i++) {
+                    $(".animal_graph"+animal_list[i][0]).css("background", "#"+animal_list[i][5]);
+                    $(".animal_graph"+animal_graph_name[i]).css("width", animal_graph[i]+"%");
+                }
+                
             }
         </script>
         <!-- 인공지능 머신 -->
@@ -158,15 +215,24 @@
                     reader.onload = function (e) {
                         $('.image-upload-wrap').hide();
                         $('#loading').show();
+                        $('#label-container').hide();
+                        $('.mes_title').hide();
+                        $('.mes_cont').hide();
+                        $('.mes_cele').hide();
+                        
                         $('.file-upload-image').attr('src', e.target.result);
                         $('.file-upload-content').show();
-                        $('.image-title').html(input.files[0].name);
+                        // $('.image-title').html(input.files[0].name); // 지우기 버튼에 이름 표시
                     };
 
                     reader.readAsDataURL(input.files[0]);
                     init().then(() => {
                         predict();
                         $('#loading').hide();
+                        $('#label-container').show();
+                        $('.mes_title').show();
+                        $('.mes_cont').show();
+                        $('.mes_cele').show();
                     });
                 } else {
                     removeUpload();
