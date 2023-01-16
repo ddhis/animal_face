@@ -1,0 +1,4 @@
+User-Ahent:*
+Allow: /
+
+Sitemap: https://zzvv.netlify.app/sitemap.xml

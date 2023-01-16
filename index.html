@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <!-- 구글 서치 콘솔 -->
+        <meta
+            name="google-site-verification"
+            content="yfFz4HpM1aSro8Dvr-6CZo-RY8IgEuqFe5HdNuUjAn8"
+        />
+        <!-- 구글 서치 콘솔 -->
+
+        <title>AI 동물상 테스트</title>
+        <link rel="stylesheet" href="style.css" />
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+        <link rel="icon" href="favicon.ico" type="image/x-icon" />
+        <!-- 공유 버튼 -->
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+        <script
+            type="text/javascript"
+            src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-63c10c1e1b1336b5"
+        ></script>
+        <!-- 공유 버튼 -->
+
+        <!-- 애드센스 코드 -->
+        <script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9108717145665990"
+            crossorigin="anonymous"
+        ></script>
+        <!-- 애드센스 코드 -->
+
+        <script type="text/javascript" src="animal_list_js.js" charset="UTF-8"></script>
+    </head>
+    <body>
+        <div class="div_area">
+            
+            <!-- 상단 메뉴 -->
+        <div>
+            <ul class="nav_ul">
+                <li><a href="#" onclick="gatReload();">AI 동물상 테스트</a></li>
+            </ul>
+            
+        </div>
+        <!-- 상단 메뉴 -->
+            
+            <!-- 상단 설명 -->
+        <div>
+            <div class="top_title">
+                <span>AI 동물상 테스트</span>
+            </div>
+            
+            <div class="top_subtitle">
+                <span>사진으로 얼굴을 분석합니다</span>
+            </div>
+            
+        </div>
+        <!-- 상단 설명 -->
+            
+            
+            <!-- 업로드 html -->
+            <script
+                class="jsbin"
+                src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"
+            ></script>
+            <div class="file-upload">
+                <div class="image-upload-wrap">
+                    <input
+                        class="file-upload-input"
+                        type="file"
+                        onchange="readURL(this);"
+                        accept="image/*"
+                    />
+                    <div class="drag-text">
+                        <h3>얼굴 사진을 올려놓거나 눌러서 업로드하세요!</h3>
+                    </div>
+                </div>
+                <div class="file-upload-content">
+                    <img class="file-upload-image" id="face-image" src="#" alt="your image" />
+
+                    <!-- ai 분석 로딩 -->
+                    <div id="loading" class="animated bounce">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p class="text-center">
+                            잠시만 기다려 주세요!<br />AI가 당신의 동물상을 분석중입니다.
+                        </p>
+                    </div>
+                    <!-- ai 분석 로딩 -->
+
+                    <!-- 메세지 출력 -->
+                    <p class="mes_title"></p>
+                    <p class="mes_cont"></p>
+                    <p class="mes_cele"></p>
+                    <!-- 메세지 출력 -->
+
+                    <!-- 분석 결과 -->
+                    <div id="label-container"></div>
+                    <!-- 분석 결과 -->
+
+                    <!-- 공유 버튼 -->
+                    <div class="addthis_inline_share_toolbox"></div>
+                    <!-- 공유 버튼 -->
+
+                    <div class="image-title-wrap">
+                        <button type="button" onclick="removeUpload()" class="remove-image">
+                            <span class="image-title" onclick="gatReload();">다시하기</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="webcam-container"></div>
+            <!-- 업로드 html -->
+            
+            <!-- 광고 라인 -->
+            <div class="ad_div">
+                
+                <!-- 쿠팡 광고 -->
+                <!--
+                <script src="https://ads-partners.coupang.com/g.js"></script>
+                <script>
+                    new PartnersCoupang.G({"id":5841,"trackingCode":"AF7117182","subId":null,"template":"carousel","width":"680","height":"140"});
+                </script>
+                -->
+                <!-- 쿠팡 광고 -->
+                
+                
+            </div>
+            <!-- 광고 라인 -->
+
+            <!-- 댓글 -->
+            <div class="disqus_comments">
+                <div id="disqus_thread"></div>
+            </div>
+            <!-- 댓글 -->
+        </div>
+        <!-- 페이지 기능 -->
+        <script>
+            function gatReload() {
+                window.location.reload();
+            }
+        </script>
+        <!-- 페이지 기능 -->
+
+        <!-- 인공지능 머신 -->
+
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+        <script type="text/javascript">
+            // More API functions here:
+            // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+
+            // the link to your model provided by Teachable Machine export panel
+            const URL = 'https://teachablemachine.withgoogle.com/models/ZCESVggVa/';
+
+            let model, webcam, labelContainer, maxPredictions;
+
+            // Load the image model and setup the webcam
+            async function init() {
+                const modelURL = URL + 'model.json';
+                const metadataURL = URL + 'metadata.json';
+
+                // load the model and metadata
+                // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+                // or files from your local hard drive
+                // Note: the pose library adds "tmImage" object to your window (window.tmImage)
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+
+                // append elements to the DOM
+
+                labelContainer = document.getElementById('label-container');
+                for (let i = 0; i < maxPredictions; i++) {
+                    // and class labels
+                    labelContainer.appendChild(document.createElement('div'));
+                }
+            }
+
+            // run the webcam image through the image model
+            async function predict() {
+                // predict can take in an image, video or canvas html element
+                // 결과 가져옴
+                var images = document.getElementById('face-image');
+                const prediction = await model.predict(images, false);
+                // 순서 정렬
+                prediction.sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
+                var mes_title, mes_cont, mes_cele, animal_graph = [], animal_graph_name = [];
+                var labelTitle;
+
+
+
+
+                for (let i = 0; i < maxPredictions; i++) {
+
+                    if (prediction[0].className == animal_list[i][0]) {
+                        mes_title = animal_list[i][2] + " " + animal_list[i][1];
+                        mes_cont = animal_list[i][4];
+                        mes_cele = animal_list[i][3];
+                        $('.mes_title').css("color","#"+animal_list[i][5]);
+                        $('.mes_cele').css("color","#"+animal_list[i][5]);
+
+                    }
+
+                     switch (prediction[i].className) {
+                    case "dog":
+                        labelTitle = "강아지상"
+                        break;
+                    case "cat":
+                        labelTitle = "고양이상"
+                        break;
+                    case "fox":
+                        labelTitle = "여우상"
+                        break;
+                    case "bear":
+                        labelTitle = "곰상"
+                        break;
+                    case "deer":
+                        labelTitle = "사슴상"
+                        break;
+                    case "snake":
+                        labelTitle = "뱀상"
+                        break;
+                    case "turtle":
+                        labelTitle = "꼬부기상"
+                        break;
+                    case "rabbit":
+                        labelTitle = "토끼상"
+                        break;
+                    case "dinosaur":
+                        labelTitle = "공룡상"
+                        break;
+                    default:
+                        labelTitle = "알수없음"
+                }
+
+                    const classPrediction = "<div class='animal_graph'><span class='animal_graph_span animal_graph"+prediction[i].className+"'>"+ labelTitle + ': ' + Math.round(prediction[i].probability.toFixed(2) * 100) + "%</span></div>";
+                    animal_graph.push(Math.round(prediction[i].probability.toFixed(2) * 100));
+                    animal_graph_name.push(prediction[i].className);
+                    //$('#animal_graph'+i).css("width", (prediction[i].probability.toFixed(2) * 100)+"%");
+
+
+                    // console.log((prediction[i].probability.toFixed(2) * 100)+"%");
+                    <!-- 결과 값이 0이 아닐 경우에만 표시 -->
+                    if (prediction[i].probability.toFixed(2) > 0) {
+                        labelContainer.childNodes[i].innerHTML = classPrediction;
+                    }
+
+                }
+                $('.mes_title').html(mes_title);
+                $('.mes_cont').html(mes_cont);
+                $('.mes_cele').html(mes_cele);
+                for (let i = 0; i < animal_list.length; i++) {
+                    $(".animal_graph"+animal_list[i][0]).css("background", "#"+animal_list[i][5]);
+                    $(".animal_graph"+animal_graph_name[i]).css("width", animal_graph[i]+"%");
+                }
+
+            }
+        </script>
+        <!-- 인공지능 머신 -->
+
+        <!-- 업로드 js -->
+        <script>
+            function readURL(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+
+                    reader.onload = function (e) {
+                        $('.image-upload-wrap').hide();
+                        $('#loading').show();
+                        $('#label-container').hide();
+                        $('.mes_title').hide();
+                        $('.mes_cont').hide();
+                        $('.mes_cele').hide();
+
+                        $('.file-upload-image').attr('src', e.target.result);
+                        $('.file-upload-content').show();
+                        // $('.image-title').html(input.files[0].name); // 지우기 버튼에 이름 표시
+                    };
+
+                    reader.readAsDataURL(input.files[0]);
+                    init().then(() => {
+                        predict();
+                        $('#loading').hide();
+                        $('#label-container').show();
+                        $('.mes_title').show();
+                        $('.mes_cont').show();
+                        $('.mes_cele').show();
+                    });
+                } else {
+                    removeUpload();
+                }
+            }
+
+            function removeUpload() {
+                $('.file-upload-input').replaceWith($('.file-upload-input').clone());
+                $('.file-upload-content').hide();
+                $('.image-upload-wrap').show();
+            }
+            $('.image-upload-wrap').bind('dragover', function () {
+                $('.image-upload-wrap').addClass('image-dropping');
+            });
+            $('.image-upload-wrap').bind('dragleave', function () {
+                $('.image-upload-wrap').removeClass('image-dropping');
+            });
+        </script>
+        <!-- 업로드 js -->
+
+        <!-- 댓글 -->
+        <script>
+            /**
+             *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+             *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+            /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+            (function () {
+                // DON'T EDIT BELOW THIS LINE
+                var d = document,
+                    s = d.createElement('script');
+                s.src = 'https://animal-face95.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+            })();
+        </script>
+        <noscript
+            >Please enable JavaScript to view the
+            <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript
+        >
+        <!-- 댓글 -->
+    </body>
+    <!--
+Copyright (c) 2023 by Aaron Vanston (https://codepen.io/aaronvanston/pen/yNYOXR)
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+     -->
+</html>
